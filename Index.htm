@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Growth Calculator</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- Base & Variables --- */
+        :root {
+            --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        /* --- Light Theme --- */
+        :root[data-theme="light"] {
+            --primary-color: #1a365d;
+            --primary-hover: #2c5282;
+            /* Slightly Lighter Blue */
+            --text-color: #2d3748;
+            /* Dark Gray */
+            --text-muted: #718096;
+            /* Medium Gray */
+            --page-bg: #f0f4f8;
+            /* Lighter Gray-Blue page BG */
+            --container-bg: #ffffff;
+            /* White container */
+            --card-bg: #ffffff;
+            /* White cards */
+            --card-bg-two: #eff1f3;
+            /* Lighter Gray for intro/results */
+            --input-bg: #ffffff;
+            /* White inputs */
+            --border-color: #e2e8f0;
+            /* Light Gray border */
+            --hover-color: #edf2f7;
+            /* Light Gray hover */
+            --success-color: #38a169;
+            /* Green */
+            --error-color: #c53030;
+            /* Red */
+            --neutral-color: #4a5568;
+            /* Gray */
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            /* Softer shadow */
+            --header-bg: #1e3a5f;
+            /* Banner BG */
+            --header-text: #ffffff;
+            /* Banner Text */
+            --button-text-color: #ffffff;
+            /* Text on primary buttons */
+            --tooltip-bg: #2d3748;
+            /* Dark tooltip bg */
+            --tooltip-text: #ffffff;
+            /* White tooltip text */
+            --btt-bg: var(--primary-color);
+            --btt-hover-bg: var(--primary-hover);
+            --btt-text: #ffffff;
+        }
+
+        /* --- Dark Theme --- */
+        :root[data-theme="dark"] {
+            --primary-color: #3a6ea5;
+            /* Brighter Blue for contrast */
+            --primary-hover: #93c5fd;
+            /* Even Brighter Blue hover */
+            --text-color: #e2e8f0;
+            /* Light Gray text */
+            --text-muted: #a0aec0;
+            /* Medium Gray text */
+            --page-bg: #1a202c;
+            /* Very Dark Blue/Gray background */
+            --container-bg: #2d3748;
+            /* Dark Gray/Blue container */
+            --card-bg: #2d3748;
+            /* Dark cards */
+            --card-bg-two: #1a202c;
+            /* Darker bg for intro/results */
+            --input-bg: #1a202c;
+            /* Darker inputs */
+            --border-color: #4a5568;
+            /* Gray border */
+            --hover-color: #4a5568;
+            /* Darker Gray hover */
+            --success-color: #68d391;
+            /* Lighter Green */
+            --error-color: #fc8181;
+            /* Lighter Red */
+            --neutral-color: #cbd5e0;
+            /* Lighter Gray */
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --header-bg: #3a6ea5;
+            ;
+            /* Banner BG */
+            --header-text: #ffffff;
+            /* Banner Text */
+            --button-text-color: #1a202c;
+            /* Dark text on light buttons */
+            --tooltip-bg: #e2e8f0;
+            /* Light tooltip bg */
+            --tooltip-text: #1a202c;
+            /* Dark tooltip text */
+            --btt-bg: var(--primary-color);
+            --btt-hover-bg: var(--primary-hover);
+            --btt-text: #1a202c;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        /* --- BODY --- */
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            /* Remove body padding, container handles it */
+            background-color: var(--page-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 16px;
+        }
+
+        /* --- CONTAINER --- */
+        .container {
+            max-width: 800px;
+            /* Consistent width */
+            margin: 2rem auto;
+            /* Add top/bottom margin */
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px var(--shadow-color);
+            overflow: hidden;
+            /* Prevent content spilling */
+            padding: 0;
+            /* Sections will have padding */
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- BANNER --- */
+        .site-banner {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 15px 25px;
+            /* Adjusted padding */
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Center content */
+            gap: 15px;
+            flex-wrap: wrap;
+            /* Allow wrapping */
+            text-align: center;
+        }
+
+        .banner-logo img {
+            height: 45px;
+            /* Adjusted size */
+            width: auto;
+            display: block;
+            max-width: 100%;
+        }
+
+        .banner-text {
+            font-size: clamp(1.4rem, 4vw, 1.6rem);
+            /* Responsive font size */
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            margin: 0;
+            /* Remove default margin */
+        }
+
+        /* --- CONTROLS AREA (Theme + PDF) --- */
+        .controls-area {
+            background-color: var(--container-bg);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* --- BUTTONS --- */
+        .btn,
+        button {
+            /* Apply base styles to all buttons initially */
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            /* Start transparent */
+            border-radius: 8px;
+            /* Rounded corners */
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background-color: var(--primary-color);
+            /* Default primary background */
+            color: var(--button-text-color);
+            /* Default text color */
+            font-size: 0.8rem;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            /* Align icons/text if present */
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn:hover,
+        button:hover,
+        .btn:focus-visible,
+        button:focus-visible {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            /* Match border to hover background */
+            color: white;
+            outline: none;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            transform: translateY(-1px);
+        }
+
+        /* --- Light Theme Specific Button Colors --- */
+        :root[data-theme="light"] .btn,
+        :root[data-theme="light"] button {
+            border-color: var(--primary-color);
+            /* Set border color for light theme */
+            color: var(--button-text-color);
+            /* Ensure white text */
+        }
+
+        /* PDF button specific color in light theme */
+        :root[data-theme="light"] .btn.pdf-export-btn {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: #fff;
+            /* White text on green */
+        }
+
+        :root[data-theme="light"] .btn.pdf-export-btn:hover {
+            background-color: #2f855a;
+            /* Darker green */
+            border-color: #2f855a;
+        }
+
+
+        /* --- Dark Theme Specific Button Colors --- */
+        :root[data-theme="dark"] .btn,
+        :root[data-theme="dark"] button {
+            color: white;
+            /* Use specific dark theme button text color */
+            background-color: var(--primary-color);
+            /* Use dark theme primary color */
+            border-color: var(--primary-color);
+            /* Match border */
+        }
+
+        :root[data-theme="dark"] .btn:hover,
+        :root[data-theme="dark"] button:hover,
+        :root[data-theme="dark"] .btn:focus-visible,
+        :root[data-theme="dark"] button:focus-visible {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            color: white;
+            /* Ensure text color on hover */
+        }
+
+        /* PDF button specific color in dark theme */
+        :root[data-theme="dark"] .btn.pdf-export-btn {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: #1a202c;
+            /* Dark text on light green */
+        }
+
+        :root[data-theme="dark"] .btn.pdf-export-btn:hover {
+            background-color: #9ae6b4;
+            /* Lighter green hover */
+            border-color: #9ae6b4;
+            color: #1a202c;
+        }
+
+
+
+        /* Main Content Area */
+        main#content {
+            /* Target the main element with ID */
+            padding: 2rem 1.5rem;
+            /* Padding inside content */
+        }
+
+        /* Calculator Section Styling */
+        .calc-section {
+            /* Used for intro, calc, charts, notes */
+            background-color: var(--card-bg-two);
+            /* ADD THIS - Use secondary bg */
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            /* Space between sections */
+            box-shadow: 0 1px 3px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        * Override background for specific sections if needed */ .calculator-inputs-section,
+        /* Add a class to the <section> containing inputs if you want white bg */
+        .chart-section,
+        /* Target the inner chart divs */
+        .notes-section-container
+
+        /* Add a class to the <section> containing notes if needed */
+            {
+            background-color: var(--card-bg);
+            /* Revert to primary card background */
+            /* You might want to add box-shadow back here too if desired */
+            /* box-shadow: 0 2px 4px var(--shadow-color); */
+        }
+
+        /* Ensure introduction keeps its distinct background */
+        .introduction-section {
+            background-color: var(--card-bg-two);
+            /* Explicitly keep secondary */
+            /* No need to override other calc-section styles unless necessary */
+        }
+
+        .calc-section:last-child {
+            margin-bottom: 0;
+            /* No margin on the last section */
+        }
+
+        /* Headings within calculator sections */
+        .calc-section h1,
+        .calc-section h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .calc-section h1 {
+            font-size: clamp(1.6rem, 4.5vw, 2rem);
+        }
+
+        .calc-section h2 {
+            font-size: clamp(1.4rem, 4vw, 1.8rem);
+        }
+
+        .calc-section h3 {
+            color: var(--text-color);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Introduction Section Specifics */
+        .introduction-section {
+            background-color: var(--card-bg-two);
+            /* Use contrasting bg */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .introduction-section p {
+            text-align: center;
+            margin-bottom: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .introduction-section ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 90%;
+        }
+
+        /* Centered list */
+        .introduction-section li {
+            font-size: 0.9em;
+            margin-bottom: 0.4rem;
+            position: relative;
+            padding-left: 1.2em;
+        }
+
+        .introduction-section li::before {
+            /* Custom bullet */
+            content: '•';
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            /* Use main card bg */
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px var(--shadow-color);
+        }
+
+        .info-card h3 {
+            font-size: 1.1em;
+            margin: 0 0 0.75rem 0;
+            text-align: left;
+            color: var(--primary-color);
+        }
+
+        .info-card p {
+            font-size: 0.95em;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .info-card ul {
+            padding-left: 20px;
+            margin-top: 0.5rem;
+        }
+
+        .info-card li {
+            font-size: 0.9em;
+            margin-bottom: 0.25rem;
+            color: var(--text-muted);
+            padding-left: 0;
+        }
+
+        /* Reset padding */
+        .info-card li::before {
+            content: '✓';
+            color: var(--success-color);
+            left: -1.2em;
+        }
+
+        /* Checkmark */
+
+
+        /* Input Area */
+        .calculator-inputs {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 0.5rem 1rem;
+        }
+
+        .input-group label {
+            font-weight: 300;
+            flex-basis: 200px;
+            flex-shrink: 0;
+            padding-right: 0.5rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        .input-group .tooltip-wrapper {
+            display: flex;
+            flex-grow: 1;
+            align-items: center;
+            min-width: 150px;
+        }
+
+        .input-group input[type="number"] {
+            flex-grow: 1;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            min-width: 80px;
+            max-width: 100%;
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Tooltip styling */
+        .info-tooltip {
+            position: relative;
+            cursor: help;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+            display: inline-flex;
+            /* Align icon better */
+            align-items: center;
+            justify-content: center;
+            width: 1.2em;
+            height: 1.2em;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            line-height: 1;
+            /* Prevent line height issues */
+        }
+
+        .info-tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            /* Start slightly small */
+            transform-origin: bottom center;
+            padding: 0.5rem 0.75rem;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: max-content;
+            max-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+            /* Add transform */
+            z-index: 10;
+            text-align: center;
+            line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-tooltip:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            /* Scale up on hover */
+        }
+
+        /* Results Display */
+        .results-display {
+            background-color: var(--card-bg-two);
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            font-size: 0.95rem;
+            display: none;
+            /* Hidden initially */
+            line-height: 1.7;
+        }
+
+        .results-display p {
+            margin: 0.5rem 0;
+            color: var(--text-muted);
+        }
+
+        .results-display p strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .results-display ul {
+            padding-left: 20px;
+            margin-top: 0.75rem;
+            list-style: disc;
+        }
+
+        .results-display li {
+            margin-bottom: 0.4rem;
+            color: var(--text-muted);
+        }
+
+        /* Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        @media (min-width: 650px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .chart-section {
+            background: var(--card-bg);
+            /* Override section bg */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+           padding: 1.1rem;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-section h3 {
+            font-size: 1.2em;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+    
+
+        /* Notes Section */
+        .notes-section textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            /* More padding */
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+            /* Minimum height */
+        }
+
+        .notes-controls {
+            text-align: right;
+            margin-top: 0.75rem;
+        }
+
+        .notes-display {
+            margin-top: 1rem;
+        }
+
+        .note-item {
+            background: var(--page-bg);
+            padding: 1rem;
+            margin: 0.75rem 0;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .note-content {
+            flex: 1;
+        }
+
+        .note-content p {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .note-content small {
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+
+        .delete-button {
+            background-color: transparent;
+            color: var(--error-color);
+            border: none;
+            border-radius: 4px;
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            margin-left: 1rem;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .delete-button:hover {
+            color: #e53e3e;
+        }
+
+        :root[data-theme="dark"] .delete-button:hover {
+            color: #fc8181;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            /* Add space above footer */
+            padding: 1.5rem;
+            /* Padding inside footer */
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9em;
+            color: var(--text-muted);
+            background-color: var(--container-bg);
+            /* Match container background */
+        }
+
+        /* Back to Top Button */
+        #back-to-top {
+            position: fixed;
+            bottom: 20px;
+            /* Adjust position */
+            left: 50%;
+            /* Center horizontally */
+            transform: translateX(-50%);
+            /* Fine-tune centering */
+            background-color: var(--btt-bg);
+            color: var(--btt-text);
+            border: none;
+            border-radius: 25px;
+            /* Pill shape */
+            padding: 8px 20px;
+            /* Adjust padding */
+            font-size: 0.9rem;
+            /* Adjust font size */
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-lg-color);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+            display: inline-flex;
+            /* Align icon and text */
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #back-to-top .arrow {
+            /* Style for the arrow */
+            font-size: 1.2em;
+            line-height: 1;
+        }
+
+        #back-to-top.visible {
+            opacity: 0.9;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+            /* Appear from bottom */
+        }
+
+        #back-to-top:hover {
+            background-color: var(--btt-hover-bg);
+            transform: translateX(-50%) scale(1.05);
+            /* Scale on hover */
+            opacity: 1;
+        }
+
+        /* Accessibility helper */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* --- RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+                border-radius: 8px;
+            }
+
+            main#content {
+                padding: 1.5rem 1rem;
+            }
+
+            .calc-section h1 {
+                font-size: 1.5em;
+            }
+
+            .calc-section h2 {
+                font-size: 1.25em;
+            }
+
+            .input-group label {
+                flex-basis: 100%;
+                text-align: left;
+                margin-bottom: 0.25rem;
+            }
+
+            .input-group .tooltip-wrapper {
+                flex-basis: 100%;
+            }
+
+            /* Full width for input+tooltip */
+            .info-tooltip {
+                order: 1;
+                margin-left: 0.5rem;
+            }
+
+            /* Keep tooltip after input */
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-area {
+                justify-content: center;
+                padding: 0.75rem 1rem;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .footer {
+                padding: 1rem;
+            }
+
+            #back-to-top {
+                font-size: 0.85rem;
+                padding: 6px 15px;
+                bottom: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .site-banner {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px 15px;
+            }
+
+            .banner-logo img {
+                height: 40px;
+            }
+
+            .banner-text {
+                font-size: 1.2rem;
+            }
+
+            .input-group label {
+                text-align: left;
+            }
+
+            /* Ensure left alignment */
+            .input-group {
+                gap: 0.25rem;
+            }
+        }
+
+
+        /* --- PRINT STYLES (E-book / Professional Document Look) --- */
+        @media print {
+            @page {
+                size: letter portrait;
+                margin: 0.75in;
+            }
+
+            body {
+                font-family: 'Times New Roman', Times, serif !important;
+                font-size: 11pt;
+                line-height: 1.4;
+                color: #000 !important;
+                background: #fff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Hide elements */
+            .site-banner,
+            .controls-area,
+            #back-to-top,
+            .hide-for-pdf,
+            button,
+            .info-tooltip,
+            .delete-button {
+                display: none !important;
+            }
+
+            /* Reset container */
+            .container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: none !important;
+            }
+
+            main#content {
+                padding: 0 !important;
+            }
+
+            /* Style calculator sections */
+            .calc-section {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                margin: 0 0 20pt 0 !important;
+                padding: 15pt !important;
+                background: #fff !important;
+                page-break-inside: avoid;
+                border-radius: 0 !important;
+            }
+
+            .calc-section h1,
+            .calc-section h2 {
+                color: #000 !important;
+                font-size: 14pt !important;
+                text-align: left;
+                border-bottom: 1px solid #555 !important;
+                padding-bottom: 4pt !important;
+                margin-bottom: 12pt !important;
+            }
+
+            .calc-section h3 {
+                color: #000 !important;
+                font-size: 12pt !important;
+                text-align: left;
+                margin: 15pt 0 8pt 0 !important;
+                font-weight: bold;
+            }
+
+            /* Display input values as text */
+            .input-group {
+                display: block !important;
+                margin-bottom: 8pt;
+            }
+
+            .input-group label {
+                display: inline !important;
+                font-weight: bold;
+                flex-basis: auto;
+                text-align: left !important;
+                padding-right: 5px;
+            }
+
+            .input-group input[type="number"] {
+                display: none !important;
+            }
+
+            /* Hide input */
+            .input-group .tooltip-wrapper {
+                display: none !important;
+            }
+
+            /* Hide input wrapper */
+            .input-group::after {
+                /* Display the value after the label */
+                content: attr(data-print-value);
+                /* We'll add this via JS */
+                display: inline;
+                margin-left: 5px;
+                font-weight: normal;
+                color: #333;
+            }
+
+            /* Style results */
+            .results-display {
+                display: block !important;
+                background: #f8f8f8 !important;
+                border: 1px solid #ddd !important;
+                padding: 10pt !important;
+                margin-top: 10pt;
+                border-radius: 0 !important;
+            }
+
+            .results-display p {
+                color: #000 !important;
+                margin: 3pt 0;
+                font-size: 10pt;
+                text-align: left;
+            }
+
+            .results-display strong {
+                font-weight: bold;
+            }
+
+            .results-display ul {
+                margin-top: 5pt;
+                padding-left: 15pt;
+            }
+
+            .results-display li {
+                font-size: 10pt;
+                margin-bottom: 2pt;
+                color: #333 !important;
+            }
+
+            /* Hide Charts */
+            .charts-container,
+            .chart-section,
+            .chart-container,
+            canvas {
+                display: none !important;
+            }
+
+            /* Style Notes */
+            .notes-section textarea {
+                display: none !important;
+            }
+
+            .notes-display {
+                margin-top: 10pt;
+            }
+
+            .note-item {
+                background: #f8f8f8 !important;
+                border: 1px solid #eee !important;
+                border-left: 3px solid #888 !important;
+                padding: 8pt !important;
+                margin: 6pt 0;
+                page-break-inside: avoid;
+                border-radius: 0 !important;
+            }
+
+            .note-content p {
+                color: #000 !important;
+                margin-bottom: 3pt;
+                font-size: 10pt;
+                text-align: left;
+            }
+
+            .note-content small {
+                color: #555 !important;
+                font-size: 8pt;
+            }
+
+            /* Hide Footer */
+            .footer {
+                display: none !important;
+            }
+        }
+
+        /* End @media print */
+    </style>
+</head>
+
+<body>
+    <!-- Main container -->
+    <div class="container">
+
+        <!-- Site Banner (Copied from Fundamentals) -->
+        <div class="site-banner">
+            <div class="banner-logo">
+                <img src="https://static.wixstatic.com/media/c24a60_577eb503a3c1402b846b9ec4a2afd46e~mv2.png" alt="My College Finance Logo">
+            </div>
+            <h2 class="banner-text">My College Finance</h2>
+        </div>
+
+        <!-- Controls Area (Copied from Fundamentals) -->
+        <div class="controls-area">
+            <button class="btn theme-toggle" onclick="toggleTheme()" aria-label="Toggle Dark/Light Theme">Theme</button>
+            <button class="btn pdf-export-btn" onclick="generatePDF()" aria-label="Download Page as PDF">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                </svg>
+                Download PDF
+            </button>
+        </div>
+
+        <!-- Content sections wrapper -->
+        <main id="content" class="content-area">
+
+            <!-- Introduction Section -->
+            <section class="calc-section introduction-section">
+                <h1>Understanding Investment Growth</h1>
+                <p>Visualize how your savings can grow over different time horizons.</p>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Short-Term Investments (1-5 years) 📈</h3>
+                        <p>Goals like emergency funds, down payments, or large purchases.</p>
+                        <ul>
+                            <li>Lower risk, focus on capital preservation</li>
+                            <li>Higher liquidity needed</li>
+                            <li>Typically lower, more stable returns</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>Long-Term Investments (5+ years) 🚀</h3>
+                        <p>Goals like retirement, wealth building, or leaving a legacy.</p>
+                        <ul>
+                            <li>Can tolerate higher risk for higher potential return</li>
+                            <li>Focus on compound growth over time</li>
+                            <li>Can withstand market fluctuations</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Short-Term Calculator -->
+            <section class="calc-section">
+                <h2>Short-Term Growth Calculator (1-5 Years)</h2>
+                <div class="calculator-inputs">
+                    <div class="input-group">
+                        <label for="short-initial">Initial Investment ($):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="short-initial" placeholder="e.g., 1000">
+                            <span class="info-tooltip" data-tooltip="The amount you start with. Your first deposit.">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="short-monthly">Monthly Contribution ($):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="short-monthly" placeholder="e.g., 100">
+                            <span class="info-tooltip" data-tooltip="Amount added each month to grow the fund.">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="short-rate">Est. Annual Rate (%):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="short-rate" step="0.1" placeholder="e.g., 4.5">
+                            <span class="info-tooltip" data-tooltip="Expected yearly return (e.g., HYSA rate).">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="short-years">Period (1-5 years):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="short-years" min="1" max="5" placeholder="1-5">
+                            <span class="info-tooltip" data-tooltip="Investment duration (1 to 5 years).">ⓘ</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="calculateShortTerm()" class="btn">Calculate Short-Term</button>
+                <div id="short-term-result" class="results-display" style="display: none;"></div>
+            </section>
+
+            <!-- Long-Term Calculator -->
+            <section class="calc-section">
+                <h2>Long-Term Growth Calculator (5+ Years)</h2>
+                <div class="calculator-inputs">
+                    <div class="input-group">
+                        <label for="long-initial">Initial Investment ($):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="long-initial" placeholder="e.g., 5000">
+                            <span class="info-tooltip" data-tooltip="Your first deposit for long-term growth.">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="long-monthly">Monthly Contribution ($):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="long-monthly" placeholder="e.g., 250">
+                            <span class="info-tooltip" data-tooltip="Amount added monthly for compounding.">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="long-rate">Est. Annual Rate (%):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="long-rate" step="0.1" placeholder="e.g., 7.5">
+                            <span class="info-tooltip" data-tooltip="Expected average yearly return (e.g., market index).">ⓘ</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="long-years">Period (5+ years):</label>
+                        <div class="tooltip-wrapper">
+                            <input type="number" id="long-years" min="5" placeholder="e.g., 10, 20, 30">
+                            <span class="info-tooltip" data-tooltip="Investment duration (5 years or more).">ⓘ</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="calculateLongTerm()" class="btn">Calculate Long-Term</button>
+                <div id="long-term-result" class="results-display" style="display: none;"></div>
+            </section>
+
+            <!-- Investment Growth Visualizations -->
+            <section class="calc-section visualization-section"> <!-- Keep secondary bg -->
+                <h2>Investment Growth Visualization</h2>
+                <div class="charts-container">
+                    <div class="chart-section"> <!-- Use primary bg -->
+                        <h3>Short-Term Growth</h3>
+                        <div class="chart-container"><canvas id="shortGrowthChart"></canvas></div>
+                    </div>
+                    <div class="chart-section"> <!-- Use primary bg -->
+                        <h3>Long-Term Growth</h3>
+                        <div class="chart-container"><canvas id="longGrowthChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- Investment Notes & Insights -->
+            <section class="calc-section notes-section-container"> <!-- Keep primary bg -->
+                <h2>Investment Notes & Insights</h2>
+                <div class="notes-section">
+                    <div class="notes-input">
+                        <label for="investment-notes" class="sr-only">Enter your notes:</label>
+                        <textarea id="investment-notes" placeholder="Add your investment thoughts, strategies, and insights here..." rows="5"></textarea>
+                    </div>
+                    <div class="notes-controls">
+                        <button onclick="saveNote()" class="btn">Save Note</button>
+                    </div>
+                    <div id="notes-display" class="notes-display"><!-- Saved notes will appear here --></div>
+                </div>
+            </section>
+
+            <!-- Footer (Copied from Fundamentals) -->
+            <div class="footer">
+                Brought to you by My College Finance
+            </div>
+
+
+            <!-- Back to Top Button HTML (Copied from Fundamentals) -->
+            <a href="#" id="back-to-top" aria-label="Back to Top" title="Back to Top">
+                <span class="arrow">↑</span> Back to Top
+            </a>
+            <script>
+                // Global charts and notes state
+                let shortTermChart = null;
+                let longTermChart = null;
+                let notes = []; // Holds note objects { text: '...', date: '...' }
+
+                // --- Helper: Format Currency ---
+                const formatCurrency = (amount) => {
+                    const numericAmount = Number(amount);
+                    if (isNaN(numericAmount)) {
+                        return '$0.00';
+                    }
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(numericAmount);
+                };
+
+                /*******************
+                 * Chart.js Logic
+                 *******************/
+                function generateLabels(years) {
+                    const labels = ['Start'];
+                    for (let i = 1; i <= years; i++) {
+                        labels.push(`Year ${i}`);
+                    }
+                    return labels;
+                }
+
+                function generateGrowthData(principal, monthlyContribution, annualRate, years) {
+                    const monthlyRate = annualRate / 12 / 100;
+                    const dataPoints = [principal];
+                    let currentAmount = principal;
+                    for (let y = 1; y <= years; y++) {
+                        for (let m = 1; m <= 12; m++) {
+                            currentAmount += monthlyContribution;
+                            currentAmount *= (1 + monthlyRate);
+                        }
+                        dataPoints.push(parseFloat(currentAmount.toFixed(2)));
+                    }
+                    return dataPoints;
+                }
+
+                function updateChart(chartInstance, canvasId, chartLabel, labels, growthData, color) {
+                    const ctx = document.getElementById(canvasId)?.getContext('2d');
+                    if (!ctx) {
+                        console.error(`Canvas context not found for ID: ${canvasId}`);
+                        return null;
+                    }
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+
+                    // Get theme-appropriate colors for grid lines and ticks
+                    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() || '#e2e8f0';
+                    const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#718096';
+
+                    return new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: chartLabel,
+                                data: growthData,
+                                borderColor: color,
+                                backgroundColor: color + '33', // Example: 'rgba(54, 162, 235, 0.2)'
+                                tension: 0.1,
+                                fill: true,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: color, // Match point color to line
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        },
+                                        color: tickColor // Apply theme color
+                                    },
+                                    grid: {
+                                        color: gridColor // Apply theme color
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: tickColor
+                                    }, // Apply theme color
+                                    grid: {
+                                        color: gridColor
+                                    } // Apply theme color
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += formatCurrency(context.parsed.y); // Use helper
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+
+
+                /*******************
+                 * Notes Management
+                 *******************/
+                function renderNotes() {
+                    const display = document.getElementById('notes-display');
+                    if (!display) return;
+                    display.innerHTML = '';
+                    if (notes.length === 0) {
+                        display.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No notes saved yet.</p>';
+                        return;
+                    }
+                    notes.forEach((note, index) => {
+                        const noteElement = document.createElement('div');
+                        noteElement.className = 'note-item';
+
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'note-content';
+
+                        const p = document.createElement('p');
+                        p.textContent = note.text; // Safer than innerHTML
+                        const small = document.createElement('small');
+                        small.textContent = `Saved: ${note.date}`;
+
+                        contentDiv.appendChild(p);
+                        contentDiv.appendChild(small);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-button';
+                        deleteBtn.setAttribute('aria-label', 'Delete note');
+                        deleteBtn.innerHTML = '×';
+                        deleteBtn.onclick = () => deleteNote(index);
+
+                        noteElement.appendChild(contentDiv);
+                        noteElement.appendChild(deleteBtn);
+                        display.appendChild(noteElement);
+                    });
+                }
+
+                function deleteNote(index) {
+                    if (confirm('Are you sure you want to delete this note?')) {
+                        notes.splice(index, 1);
+                        localStorage.setItem('investmentNotes', JSON.stringify(notes));
+                        renderNotes();
+                    }
+                }
+
+                function saveNote() {
+                    const noteTextArea = document.getElementById('investment-notes');
+                    if (!noteTextArea) return;
+                    const noteText = noteTextArea.value.trim();
+
+                    if (noteText) {
+                        const newNote = {
+                            text: noteText,
+                            date: new Date().toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })
+                        };
+                        notes.push(newNote);
+                        localStorage.setItem('investmentNotes', JSON.stringify(notes));
+                        renderNotes();
+                        noteTextArea.value = '';
+                    } else {
+                        alert('Please enter a note before saving.');
+                    }
+                }
+
+                function loadNotes() {
+                    const savedNotes = localStorage.getItem('investmentNotes');
+                    if (savedNotes) {
+                        try {
+                            notes = JSON.parse(savedNotes);
+                            if (!Array.isArray(notes)) {
+                                console.warn("Stored notes data is not an array. Resetting.");
+                                notes = [];
+                                localStorage.removeItem('investmentNotes');
+                            }
+                        } catch (e) {
+                            console.error("Error parsing saved notes:", e);
+                            notes = [];
+                            localStorage.removeItem('investmentNotes');
+                        }
+                    } else {
+                        notes = [];
+                    }
+                    renderNotes();
+                }
+
+
+                /***********************************
+                 * Core Calculation Logic
+                 ***********************************/
+                function calculateGrowth(principal, monthlyContribution, annualRate, years) {
+                    const monthlyRate = annualRate / 12 / 100;
+                    const months = years * 12;
+                    let futureValue = principal * Math.pow(1 + monthlyRate, months);
+
+                    if (monthlyRate > 0) {
+                        futureValue += monthlyContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+                    } else {
+                        futureValue += monthlyContribution * months;
+                    }
+
+                    const totalContributions = principal + (monthlyContribution * months);
+                    const interestEarned = futureValue - totalContributions;
+
+                    // --- Store last parameters for theme change redraw ---
+                    // This is slightly simplified; ideally, you'd store separately for short/long
+                    // but this demonstrates the concept. Storing in sessionStorage is temporary.
+                    sessionStorage.setItem('lastCalcParams', JSON.stringify({
+                        principal,
+                        monthlyContribution,
+                        annualRate,
+                        years
+                    }));
+                    // --- End parameter storage ---
+
+                    return {
+                        totalAmount: parseFloat(futureValue.toFixed(2)),
+                        totalContributions: parseFloat(totalContributions.toFixed(2)),
+                        interestEarned: parseFloat(interestEarned.toFixed(2))
+                    };
+                }
+
+
+                function calculateShortTerm() {
+                    const principal = parseFloat(document.getElementById('short-initial')?.value) || 0;
+                    const monthly = parseFloat(document.getElementById('short-monthly')?.value) || 0;
+                    const rate = parseFloat(document.getElementById('short-rate')?.value) || 0;
+                    const years = parseInt(document.getElementById('short-years')?.value) || 0;
+
+                    if (years < 1 || years > 5) {
+                        alert('Short-term period must be between 1 and 5 years.');
+                        return;
+                    }
+                    // Store params specifically for short term
+                    sessionStorage.setItem('lastShortParams', JSON.stringify({
+                        principal,
+                        monthly,
+                        rate,
+                        years
+                    }));
+                    const result = calculateGrowth(principal, monthly, rate, years);
+                    displayResult('short-term-result', result, years, principal, monthly, rate, 'short');
+                }
+
+                function calculateLongTerm() {
+                    const principal = parseFloat(document.getElementById('long-initial')?.value) || 0;
+                    const monthly = parseFloat(document.getElementById('long-monthly')?.value) || 0;
+                    const rate = parseFloat(document.getElementById('long-rate')?.value) || 0;
+                    const years = parseInt(document.getElementById('long-years')?.value) || 0;
+
+                    if (years < 5) {
+                        alert('Long-term period must be 5 years or more.');
+                        return;
+                    }
+                    // Store params specifically for long term
+                    sessionStorage.setItem('lastLongParams', JSON.stringify({
+                        principal,
+                        monthly,
+                        rate,
+                        years
+                    }));
+                    const result = calculateGrowth(principal, monthly, rate, years);
+                    displayResult('long-term-result', result, years, principal, monthly, rate, 'long');
+                }
+
+                /***********************************
+                 * Display Results & Update Charts
+                 ***********************************/
+                function displayResult(elementId, result, years, principal, monthly, rate, type) {
+                    const resultElement = document.getElementById(elementId);
+                    if (!resultElement) return;
+
+                    resultElement.innerHTML = `
+                <p>After ${years} years:</p>
+                <p><strong>Total Amount:</strong> ${formatCurrency(result.totalAmount)}</p>
+                <p><strong>Total Contributions:</strong> ${formatCurrency(result.totalContributions)}</p>
+                <p><strong>Interest Earned:</strong> ${formatCurrency(result.interestEarned)}</p>
+            `;
+                    resultElement.style.display = 'block';
+
+                    // Prepare data for charts
+                    const labels = generateLabels(years);
+                    const growthData = generateGrowthData(principal, monthly, rate, years);
+
+                    // Update the appropriate chart
+                    if (type === 'short') {
+                        const shortTermColor = getComputedStyle(document.documentElement).getPropertyValue('--success-color').trim() || '#38a169';
+                        shortTermChart = updateChart(shortTermChart, 'shortGrowthChart', 'Short-Term Growth', labels, growthData, shortTermColor);
+                    } else if (type === 'long') {
+                        const longTermColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#1a365d';
+                        longTermChart = updateChart(longTermChart, 'longGrowthChart', 'Long-Term Growth', labels, growthData, longTermColor);
+                    }
+                }
+
+
+                // --- PDF Generation Functions (Using window.print) ---
+
+                function prepareForPrint() {
+                    console.log("--- prepareForPrint START ---");
+                    document.body.classList.add('print-active'); // Add class for CSS rules
+
+                    document.title = `Investment Growth Calculation - ${new Date().toLocaleDateString()}`;
+
+                    // Add calculated values to input groups for printing
+                    document.querySelectorAll('.calculator-inputs .input-group').forEach(group => {
+                        const input = group.querySelector('input[type="number"]');
+                        const label = group.querySelector('label');
+                        if (input && label) {
+                            const value = input.value.trim();
+                            group.setAttribute('data-print-value', value ? value : 'N/A');
+                        } else if (label) {
+                            group.setAttribute('data-print-value', 'Error');
+                        }
+                    });
+
+                    // Ensure results display if they have content
+                    document.querySelectorAll('.results-display').forEach(el => {
+                        if (el.innerHTML.trim() !== '') {
+                            el.style.display = 'block';
+                        }
+                    });
+
+                    // Ensure charts are hidden
+                    document.querySelectorAll('.charts-container').forEach(el => el.style.display = 'none');
+
+
+                    console.log("--- prepareForPrint END ---");
+                }
+
+                function restoreAfterPrint() {
+                    console.log("--- restoreAfterPrint START ---");
+                    document.body.classList.remove('print-active'); // Remove class
+
+                    document.title = "Investment Growth Calculator";
+
+                    // Remove the data attribute used for printing
+                    document.querySelectorAll('.input-group').forEach(group => {
+                        group.removeAttribute('data-print-value');
+                    });
+
+                    // Reset results display visibility (let calculation trigger display)
+                    document.querySelectorAll('.results-display').forEach(el => {
+                        el.style.display = 'none';
+                    });
+
+                    // Restore chart display
+                    document.querySelectorAll('.charts-container').forEach(el => el.style.display = '');
+
+
+                    console.log("--- restoreAfterPrint END ---");
+                }
+
+                function generatePDF() {
+                    try {
+                        console.log("generatePDF called (using window.print)");
+                        prepareForPrint();
+
+                        setTimeout(() => {
+                            try {
+                                console.log("Calling window.print()...");
+                                window.print();
+                                console.log("window.print() called.");
+                                setTimeout(restoreAfterPrint, 1500);
+                            } catch (printError) {
+                                console.error("Error during window.print():", printError);
+                                alert("An error occurred while trying to print.");
+                                restoreAfterPrint();
+                            }
+                        }, 300);
+
+                    } catch (prepareError) {
+                        console.error("Error during prepareForPrint():", prepareError);
+                        alert("An error occurred while preparing the document for printing.");
+                        restoreAfterPrint();
+                    }
+                }
+
+                // --- Theme Toggle ---
+                function toggleTheme() {
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme') || 'light';
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    try {
+                        localStorage.setItem('theme', newTheme);
+                    } catch (e) {
+                        console.error("Could not save theme preference", e);
+                    }
+
+                    // --- Redraw charts with new theme colors ---
+                    const redrawChart = (paramsKey, chartVar, canvasId, label, colorVar, defaultColor) => {
+                        const params = JSON.parse(sessionStorage.getItem(paramsKey) || '{}');
+                        if (params.years) {
+                            const growthData = generateGrowthData(params.principal, params.monthly, params.rate, params.years);
+                            const labels = generateLabels(params.years);
+                            const color = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim() || defaultColor;
+                            // Assign the result of updateChart back to the global variable
+                            if (chartVar === shortTermChart) {
+                                shortTermChart = updateChart(chartVar, canvasId, label, labels, growthData, color);
+                            } else if (chartVar === longTermChart) {
+                                longTermChart = updateChart(chartVar, canvasId, label, labels, growthData, color);
+                            }
+                        }
+                    };
+
+                    redrawChart('lastShortParams', shortTermChart, 'shortGrowthChart', 'Short-Term Growth', '--success-color', '#38a169');
+                    redrawChart('lastLongParams', longTermChart, 'longGrowthChart', 'Long-Term Growth', '--primary-color', '#1a365d');
+                    // --- End Chart Redraw ---
+                }
+
+
+                // --- Back to Top Button Logic ---
+                const backToTopButtonInstance = document.getElementById('back-to-top');
+                if (backToTopButtonInstance) {
+                    window.addEventListener('scroll', () => {
+                        if (window.scrollY > 300) {
+                            backToTopButtonInstance.classList.add('visible');
+                        } else {
+                            backToTopButtonInstance.classList.remove('visible');
+                        }
+                    });
+                    backToTopButtonInstance.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
+
+
+                // --- Initial Load Logic ---
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Set initial theme
+                    try {
+                        const savedTheme = localStorage.getItem('theme') ||
+                            (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                        document.documentElement.setAttribute('data-theme', savedTheme);
+                    } catch (e) {
+                        console.error("Could not access theme preference", e);
+                        document.documentElement.setAttribute('data-theme', 'light');
+                    }
+
+                    // Load saved notes
+                    loadNotes();
+
+                    // Initialize empty charts
+                    const emptyChartData = {
+                        labels: ['Start'],
+                        growthData: [0]
+                    };
+                    const initialShortColor = getComputedStyle(document.documentElement).getPropertyValue('--success-color').trim() || '#38a169';
+                    const initialLongColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#1a365d';
+                    shortTermChart = updateChart(shortTermChart, 'shortGrowthChart', 'Short-Term Growth', emptyChartData.labels, emptyChartData.growthData, initialShortColor);
+                    longTermChart = updateChart(longTermChart, 'longGrowthChart', 'Long-Term Growth', emptyChartData.labels, emptyChartData.growthData, initialLongColor);
+
+
+                    console.log("Investment Calculator Initialized. Current theme:", document.documentElement.getAttribute('data-theme'));
+                });
+            </script>
+</body>
+
+</html>
